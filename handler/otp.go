@@ -40,7 +40,7 @@ func VerifyOTP(c *fiber.Ctx, db *sql.DB) error {
 	}
 
 	if user.Otp != body.Otp {
-		return c.Status(fiber.StatusBadRequest).JSON(schema.ResponseHTTP{
+		return c.Status(fiber.StatusUnauthorized).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
 			Message: "Incorrect Otp",
@@ -60,7 +60,8 @@ func VerifyOTP(c *fiber.Ctx, db *sql.DB) error {
 func ResendOTP(c *fiber.Ctx, db *sql.DB) error {
 	// request body data
 	body := new(schema.VerifyOTP)
-	if err := c.Status(fiber.StatusBadRequest).BodyParser(body); err != nil {
+	err := c.Status(fiber.StatusBadRequest).BodyParser(body)
+	if err != nil {
 		return c.JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
@@ -86,30 +87,5 @@ func ResendOTP(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 
-	otp, err := util.GenerateRandomOTP()
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
-			Success: false,
-			Data:    nil,
-			Message: err.Error(),
-		})
-	}
-
-	util.UpdateUserOTP(body.Phone, db, body.Otp, false)
-
-	err = util.SendOTP(c, user.Phone, otp)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
-			Success: false,
-			Data:    nil,
-			Message: err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(schema.ResponseHTTP{
-		Success: true,
-		Data:    nil,
-		Message: ,
-	})
+	return util.PrepareAndSendOTP(c, db, body, user)
 }

@@ -33,6 +33,7 @@ func Register(c *fiber.Ctx, db *sql.DB) error {
 			Message: "Phone number has been already registered",
 		})
 	}
+
 	err = util.AddUser(body, db)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
@@ -78,39 +79,27 @@ func Login(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 
-	otp, err := util.GenerateRandomOTP()
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
+	if user.IsOTPVerified {
+		if user.Password == body.Password {
+			return c.Status(fiber.StatusOK).JSON(schema.ResponseHTTP{
+				Success: true,
+				Data:    nil,
+				Message: "User Login Verified",
+			})
+		} else {
+			return c.Status(fiber.StatusUnauthorized).JSON(schema.ResponseHTTP{
+				Success: false,
+				Data:    nil,
+				Message: "Password incorrect",
+			})
+		}
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
-			Message: err.Error(),
+			Message: "OTP Is Not Verified",
 		})
 	}
-	err = util.UpdateUserOTP(body.Phone, db, otp, false)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
-			Success: false,
-			Data:    nil,
-			Message: err.Error(),
-		})
-	}
-
-	err = util.SendOTP(c, user.Phone, otp)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
-			Success: false,
-			Data:    nil,
-			Message: err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusAccepted).JSON(schema.ResponseHTTP{
-		Success: true,
-		Data:    nil,
-		Message: "Otp sent to registered mobile number",
-	})
-
 }
 
 

@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"hagavi-otp/config"
+	"hagavi-otp/model"
 	"hagavi-otp/schema"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/twilio/twilio-go"
 	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
@@ -59,4 +61,48 @@ func SendOTP(c *fiber.Ctx, toPhone string, otp string) error {
 		Data:    nil,
 		Message: "Otp sent to registered mobile number",
 	})
+}
+
+func PrepareAndSendOTP(c *fiber.Ctx, db *sql.DB, body *schema.VerifyOTP, user *model.User) error {
+	otp, err := GenerateRandomOTP()
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
+			Success: false,
+			Data:    nil,
+			Message: err.Error(),
+		})
+	}
+
+	err = SendOTP(c, user.Phone, otp)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
+			Success: false,
+			Data:    nil,
+			Message: err.Error(),
+		})
+	}
+
+	err = UpdateUserOTP(body.Phone, db, otp, false)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
+			Success: false,
+			Data:    nil,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusAccepted).JSON(schema.ResponseHTTP{
+		Success: true,
+		Data:    nil,
+		Message: "Otp sent to registered mobile number",
+	})
+}
+
+func CheckIsOTPVerified(db *sql.DB, phone string, otp string) (bool, error) {
+	user, err := FindUserByPhoneNumber(phone, db)
+	if err != nil {
+		return false, err
+	}
+	return user.IsOTPVerified, err
 }

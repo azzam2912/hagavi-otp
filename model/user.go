@@ -15,5 +15,5 @@ type User struct {
     Phone           string      `json:"phone"`
     Password        string      `json:"password"`
     Otp             string      `json:"otp"`
-    IsOTPVerified   string      `json:"isOTPVerified"`
+    IsOTPVerified   bool        `json:"isOTPVerified"`
 }

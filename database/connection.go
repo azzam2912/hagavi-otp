@@ -2,15 +2,15 @@ package database
 
 import (
    "database/sql" // add this
-   "fmt"
    "hagavi-otp/config"
+    _ "github.com/lib/pq"
 )
 
-func Connect() *sql.DB {
+func Connect() (*sql.DB) {
 	connectString := config.Config("SQL_CONNECT")
 	db, err := sql.Open("postgres", connectString)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	return db
 }
