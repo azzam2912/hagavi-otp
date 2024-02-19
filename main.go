@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"hagavi-otp/database"
 	"hagavi-otp/router"
-	"log"
 )
 
 func main() {

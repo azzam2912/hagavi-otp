@@ -1,11 +1,16 @@
 package schema
 
 type RegisterBody struct {
-    Name  string `json:"name"`
-    Phone string `json:"phone"`
+    Phone       string `json:"phone"`
+    Password    string `json:"password"`
 }
 
 type VerifyOTP struct {
     Phone string `json:"phone"`
     Otp   string `json:"otp"`
+}
+
+type LoginSchema struct {
+	Phone       string `json:"phone"`
+    Password    string `json:"password"`
 }
