@@ -3,16 +3,14 @@ package util
 import (
 	"database/sql"
 	"fmt"
-	"hagavi-otp/config"
 	"hagavi-otp/model"
 	"hagavi-otp/schema"
 )
 
-
 func FindUserByPhoneNumber(phoneNumber string, db *sql.DB) (*model.User, error) {
 	var result model.User
-	row := db.QueryRow(`SELECT * FROM $1 WHERE phone = $2`, config.Config("SQL_TABLE_NAME"), phoneNumber)
-	err := row.Scan(&result)
+	row := db.QueryRow(`SELECT * FROM user_table WHERE phone = $1`, phoneNumber)
+	err := row.Scan(&result.ID, &result.CreatedAt, &result.UpdatedAt, &result.Phone, &result.Otp, &result.Password, &result.IsOTPVerified)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {
@@ -23,7 +21,7 @@ func FindUserByPhoneNumber(phoneNumber string, db *sql.DB) (*model.User, error) 
 }
 
 func AddUser(user *schema.RegisterBody, db *sql.DB) error {
-	_, err := db.Exec(`INSERT INTO $1 (phone, password) VALUES ($2, $3)`, config.Config("SQL_TABLE_NAME"), user.Phone, user.Password)
+	_, err := db.Exec(`INSERT INTO user_table (phone, password) VALUES ($1, $2)`,user.Phone, user.Password)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -31,4 +29,3 @@ func AddUser(user *schema.RegisterBody, db *sql.DB) error {
 	}
 	return err
 }
-

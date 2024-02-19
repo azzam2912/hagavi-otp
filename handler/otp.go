@@ -59,7 +59,7 @@ func VerifyOTP(c *fiber.Ctx, db *sql.DB) error {
 
 func ResendOTP(c *fiber.Ctx, db *sql.DB) error {
 	// request body data
-	body := new(schema.VerifyOTP)
+	body := new(schema.SendOTP)
 	err := c.Status(fiber.StatusBadRequest).BodyParser(body)
 	if err != nil {
 		return c.JSON(schema.ResponseHTTP{
@@ -70,7 +70,6 @@ func ResendOTP(c *fiber.Ctx, db *sql.DB) error {
 	}
 
 	user, err := util.FindUserByPhoneNumber(body.Phone, db)
-
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
 			Success: false,
@@ -78,7 +77,6 @@ func ResendOTP(c *fiber.Ctx, db *sql.DB) error {
 			Message: err.Error(),
 		})
 	}
-
 	if user == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(schema.ResponseHTTP{
 			Success: false,

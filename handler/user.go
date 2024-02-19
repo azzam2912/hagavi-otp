@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"hagavi-otp/schema"
 	"hagavi-otp/util"
 
@@ -12,21 +13,24 @@ func Register(c *fiber.Ctx, db *sql.DB) error {
 	body := new(schema.RegisterBody)
 	err := c.BodyParser(body)
 	if err != nil {
+		fmt.Print("1-", err)
 		return c.Status(fiber.StatusBadRequest).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
-			Message: err.Error(),			
+			Message: err.Error(),
 		})
 	}
 	user, err := util.FindUserByPhoneNumber(body.Phone, db)
 	if err != nil {
+		fmt.Print("2-", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
-			Message: err.Error(),		
+			Message: err.Error(),
 		})
 	}
 	if user != nil {
+		fmt.Print(err)
 		return c.Status(fiber.StatusBadRequest).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
@@ -36,6 +40,7 @@ func Register(c *fiber.Ctx, db *sql.DB) error {
 
 	err = util.AddUser(body, db)
 	if err != nil {
+		fmt.Print("4-",err)
 		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
@@ -45,7 +50,7 @@ func Register(c *fiber.Ctx, db *sql.DB) error {
 
 	return c.Status(fiber.StatusCreated).JSON(schema.ResponseHTTP{
 		Success: true,
-		Data: nil,
+		Data:    nil,
 		Message: "Phone Number Registered",
 	})
 }
@@ -54,6 +59,7 @@ func Login(c *fiber.Ctx, db *sql.DB) error {
 	body := new(schema.LoginSchema)
 	err := c.BodyParser(body)
 	if err != nil {
+		fmt.Print(err)
 		return c.Status(fiber.StatusBadRequest).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
@@ -64,6 +70,7 @@ func Login(c *fiber.Ctx, db *sql.DB) error {
 	user, err := util.FindUserByPhoneNumber(body.Phone, db)
 
 	if err != nil {
+		fmt.Print(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(schema.ResponseHTTP{
 			Success: false,
 			Data:    nil,
@@ -101,6 +108,3 @@ func Login(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 }
-
-
-

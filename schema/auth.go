@@ -10,6 +10,10 @@ type VerifyOTP struct {
     Otp   string `json:"otp"`
 }
 
+type SendOTP struct {
+    Phone string `json:"phone"`
+}
+
 type LoginSchema struct {
 	Phone       string `json:"phone"`
     Password    string `json:"password"`

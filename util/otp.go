@@ -14,7 +14,7 @@ import (
 )
 
 func UpdateUserOTP(phoneNumber string, db *sql.DB, otp string, isOTPVerified bool) error {
-	_, err := db.Exec(`UPDATE $1 SET otp = $2, is_otp_verified = $3 WHERE phone = $4`, config.Config("SQL_TABLE_NAME"), otp, isOTPVerified, phoneNumber)
+	_, err := db.Exec(`UPDATE user_table SET otp = $1, is_otp_verified = $2 WHERE phone = $3`, otp, isOTPVerified, phoneNumber)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -49,13 +49,13 @@ func SendOTP(c *fiber.Ctx, toPhone string, otp string) error {
 	params := &twilioApi.CreateMessageParams{}
 	params.SetTo(toPhone)
 	params.SetFrom(config.Config("TWILIO_PHONE_NUMBER"))
-	params.SetBody("OTP sent from Hagavi!")
+	params.SetBody("OTP number:"+ otp +"sent from Hagavi!")
 
 	_, err := client.Api.CreateMessage(params)
 	if err != nil {
 		fmt.Println("Error sending SMS message: " + err.Error())
 		return err
-	} 
+	}
 	return c.Status(fiber.StatusAccepted).JSON(schema.ResponseHTTP{
 		Success: true,
 		Data:    nil,
@@ -63,7 +63,7 @@ func SendOTP(c *fiber.Ctx, toPhone string, otp string) error {
 	})
 }
 
-func PrepareAndSendOTP(c *fiber.Ctx, db *sql.DB, body *schema.VerifyOTP, user *model.User) error {
+func PrepareAndSendOTP(c *fiber.Ctx, db *sql.DB, body *schema.SendOTP, user *model.User) error {
 	otp, err := GenerateRandomOTP()
 
 	if err != nil {
